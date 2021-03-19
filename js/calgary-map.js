@@ -37,5 +37,50 @@ zoom: 12 // starting zoom
             paint: { }
         });
     });
+    map.on('load', function() {
+        map.addSource('nearest-hospital', {
+            type: 'geojson',
+            data: {
+                type: 'FeatureCollection',
+                features: [
+                ]
+            }
+        });
+        // Create a new circle layer from the 'nearest-library' data source
+        map.addLayer({
+            id: 'nearest-hospital',
+            type: 'circle',
+            source: 'nearest-hospital',
+            paint: {
+                'circle-radius': 12,
+                'circle-color': '#486DE0'
+            }
+        }, 'hospitals');
+    });
+    
+    map.on('click', function(e) {
+        // Return any features from the 'schools' layer whenever the map is clicked
+        var libraryFeatures = map.queryRenderedFeatures(e.point, { layers: ['schools'] });
+        if (!libraryFeatures.length) {
+            return;
+        }
+        var libraryFeature = libraryFeatures[0];
+        var hospitals = map.getSource('hospitals');
+        console.log(hospitals);
+        // Using Turf, find the nearest hospital to school clicked
+        var nearestHospital = turf.nearest(libraryFeature, hospitals._data);
+
+        // If a nearest schools is found
+        if (nearestHospital !== null) {
+        // Update the 'nearest-school' data source to include
+        // the nearest school
+        map.getSource('nearest-hospital').setData({
+            type: 'FeatureCollection',
+            features: [
+                nearestHospital
+            ]
+        });
+    }
+});
 
 });
