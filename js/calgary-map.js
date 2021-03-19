@@ -1,11 +1,12 @@
 document.addEventListener('DOMContentLoaded', function () {
     mapboxgl.accessToken = 'pk.eyJ1IjoicmF5ZWhlIiwiYSI6ImNrbHZ5NHMyejBkdXcyc214OHlvNmhrZG0ifQ.KXVOh3T-0PdiPnVQ5iMCCQ';
     var map = new mapboxgl.Map({
-container: 'mapid', // container id
-style: 'mapbox://styles/mapbox/streets-v11', // stylesheet location
-center: [-114.0719, 51.0447], // starting position
-zoom: 12 // starting zoom
-});
+        container: 'mapid', // container id
+        style: 'mapbox://styles/mapbox/streets-v11', // stylesheet location
+        center: [-114.0719, 51.0447], // starting position
+        zoom: 12 // starting zoom
+    });
+    map.on('load', function() {
     $.getJSON('https://data.calgary.ca/resource/x34e-bcjz.geojson?$where=type%20=%20%27Hospital%27%20OR%20type%20=%20%27PHS%20Clinic%27', function(data) {
         map.addLayer({
             id: 'hospitals',
@@ -20,7 +21,24 @@ zoom: 12 // starting zoom
             },
             paint: { }
         });
-
+    map.addSource('nearest-hospital', {
+                type: 'geojson',
+                data: {
+                    type: 'FeatureCollection',
+                    features: [
+                    ]
+                }
+            });
+            // Create a new circle layer from the 'nearest-school' data source
+            map.addLayer({
+                id: 'nearest-hospital',
+                type: 'circle',
+                source: 'nearest-hospital',
+                paint: {
+                    'circle-radius': 12,
+                    'circle-color': '#486DE0'
+                }
+            }, 'hospitals');
     });
 
     $.getJSON('https://data.calgary.ca/resource/fd9t-tdn2.geojson', function(data) {
@@ -37,27 +55,9 @@ zoom: 12 // starting zoom
             paint: { }
         });
     });
-    map.on('load', function() {
-        map.addSource('nearest-hospital', {
-            type: 'geojson',
-            data: {
-                type: 'FeatureCollection',
-                features: [
-                ]
-            }
-        });
-        // Create a new circle layer from the 'nearest-library' data source
-        map.addLayer({
-            id: 'nearest-hospital',
-            type: 'circle',
-            source: 'nearest-hospital',
-            paint: {
-                'circle-radius': 12,
-                'circle-color': '#486DE0'
-            }
-        }, 'hospitals');
-    });
     
+    });
+
     map.on('click', function(e) {
         // Return any features from the 'schools' layer whenever the map is clicked
         var libraryFeatures = map.queryRenderedFeatures(e.point, { layers: ['schools'] });
